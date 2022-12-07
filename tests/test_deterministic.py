@@ -45,7 +45,7 @@ def test_deterministic():
     # Optimal variable values
     all_var_values = sip.extract_all_variable_values()
 
-    # Check results are as expected
+    # Check results are as expected - (spiros) expected results are based on a reference case and loaded as data files
     print(f"Objective = {pyo.value(sip.OBJ)}")
     print(all_var_values.keys())
 

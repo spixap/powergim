@@ -14,7 +14,7 @@ import pyomo.environ as pyo
 import powergim as pgim
 
 
-print(Path(__file__).parents[1]) # this works only if i run the fule with run button. Otherwise i do not specify the module so that Path can find the path of the __file__ variable
+# print(Path(__file__).parents[1]) # this works only if i run the fule with run button. Otherwise i do not specify the module so that Path can find the path of the __file__ variable
 
 # Define location of INPUT files
 TEST_DATA_ROOT_PATH = Path(__file__).parents[1] / "test_data"
@@ -41,8 +41,8 @@ grid_data.profiles     = pgim.file_io.read_profiles(filename=file_timeseries_sam
 grid_data.branch.loc[:, "max_newCap"] = 5000 # TODO: why setting max_newCap?
 
 # --------------------------Create powerGIM model------------------------------
-optModel = pgim.SipModel(grid_data=grid_data, parameter_data=parameter_data)
-print(optModel.model_info())
+gimModel = pgim.SipModel(grid_data=grid_data, parameter_data=parameter_data)
+# print(gimModel.model_info())
 
 # Necessary pre-processing
 # Compute distance between nodes
@@ -53,10 +53,18 @@ opt = pyo.SolverFactory("glpk")
 
 # Solve optimization problem
 results = opt.solve(
-        optModel,
-        tee=False, # Show solver outpu
+        gimModel,
+        tee=True, # Show solver output
         keepfiles=False, # Keep solver log file
         symbolic_solver_labels=True, # The solver’s components (e.g., variables, constraints) will be given names that correspond to the Pyomo component names.
     )
+
+print(f"Objective = {pyo.value(gimModel.OBJ)}")
+
+# Get optimal values of the variables
+all_var_values = gimModel.extract_all_variable_values()
+
+# Get grid results
+gridResult     = gimModel.grid_data_result(all_var_values)
 
 

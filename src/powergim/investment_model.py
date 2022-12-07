@@ -632,7 +632,8 @@ class SipModel(pyo.ConcreteModel):
         # first investment year is stage 1
         stage1 = self.investment_years[0]
 
-        # Convert slices to lists as slices otherwise give error
+        # Convert slices to lists as slices otherwise give error 
+        # TODO: this needs better documentaiton (spiros)
         stage1vars = (
             _slice_to_list(self.v_branch_new_cables[:, stage1])
             + _slice_to_list(self.v_branch_new_capacity[:, stage1])
