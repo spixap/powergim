@@ -31,7 +31,7 @@ def test_deterministic():
     sip = pgim.SipModel(grid_data=grid_data, parameter_data=parameter_data)
     grid_data.branch["dist_computed"] = grid_data.compute_branch_distances()
 
-    # Fixme: Works with glpk, but not with cbc
+    # FIXME: Works with glpk, but not with cbc
     # opt = pyo.SolverFactory("cbc", solver_io="nl")
     opt = pyo.SolverFactory("glpk")
     results = opt.solve(
@@ -62,7 +62,7 @@ def test_deterministic():
     ).squeeze("columns")
     assert ((all_var_values["v_branch_new_cables"] - expected_branch_new_cables).abs() < NUMERIC_THRESHOLD).all()
 
-    # Fixme: Branch flows are different for different solvers...
+    # FIXME: Branch flows are different for different solvers...
     # expected_branch_flow12 = pd.read_csv(
     #    TEST_DATA_ROOT_PATH / "expected_branch_flow12_glpk.csv", index_col=["s_branch", "s_period", "s_time"]
     # ).squeeze("columns")
