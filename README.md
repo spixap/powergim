@@ -41,6 +41,10 @@ Clone or download the code and install it as a python package.
 4. `poetry shell`
 5. `poetry run pytest tests`
 
+### Installation trhough Anaconda Prompt (Windows)
+1. Clone/fork the github __powergim__ repository.
+2. From anaconda prompt, change directory to the local clone/fork of __powergim__ `cd <local-powergim-folder>`
+3. Install using `pip install -e .`
 
 ### GitHub Actions Pipelines
 These pipelines are defined:
