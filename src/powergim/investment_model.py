@@ -690,7 +690,7 @@ class SipModel(pyo.ConcreteModel):
             all_values[myvar.name] = df
         return all_values
 
-    def grid_data_result(self, all_var_values):
+    def grid_data_result(self, all_var_values): #TODO: (spiros): ask what's the purpose of this
         """Create grid data representing optimisation results"""
         years = list(all_var_values["v_investment_cost"].index)
         grid_data = self.grid_data

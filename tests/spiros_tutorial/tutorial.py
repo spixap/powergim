@@ -54,7 +54,7 @@ opt = pyo.SolverFactory("glpk")
 # Solve optimization problem
 results = opt.solve(
         gimModel,
-        tee=True, # Show solver output
+        tee=False, # Show solver output
         keepfiles=False, # Keep solver log file
         symbolic_solver_labels=True, # The solver’s components (e.g., variables, constraints) will be given names that correspond to the Pyomo component names.
     )
@@ -64,7 +64,7 @@ print(f"Objective = {pyo.value(gimModel.OBJ)}")
 # Get optimal values of the variables
 all_var_values = gimModel.extract_all_variable_values()
 
-# Get grid results
-gridResult     = gimModel.grid_data_result(all_var_values)
+# Get grid results - It does not provide any new info
+# gridResult     = gimModel.grid_data_result(all_var_values)
 
 
