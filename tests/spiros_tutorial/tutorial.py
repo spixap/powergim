@@ -41,6 +41,22 @@ grid_data.profiles     = pgim.file_io.read_profiles(filename=file_timeseries_sam
 grid_data.branch.loc[:, "max_newCap"] = 5000 # TODO: why setting max_newCap?
 
 # --------------------------Create powerGIM model------------------------------
-model = pgim.SipModel(grid_data=grid_data, parameter_data=parameter_data)
+optModel = pgim.SipModel(grid_data=grid_data, parameter_data=parameter_data)
+print(optModel.model_info())
+
+# Necessary pre-processing
+# Compute distance between nodes
 grid_data.branch["dist_computed"] = grid_data.compute_branch_distances()
+
+# Define optimization problem solver
+opt = pyo.SolverFactory("glpk")
+
+# Solve optimization problem
+results = opt.solve(
+        optModel,
+        tee=False, # Show solver outpu
+        keepfiles=False, # Keep solver log file
+        symbolic_solver_labels=True, # The solver’s components (e.g., variables, constraints) will be given names that correspond to the Pyomo component names.
+    )
+
 
