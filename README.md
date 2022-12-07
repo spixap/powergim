@@ -12,7 +12,7 @@ PowerGIM is a Python package for stochastic power system expansion planning that
 
 
 ## Getting started
-Install latest PowerGIM release from PyPi:
+* (_does not work_) Install latest PowerGIM release from PyPi:
 ```
 pip install powergim
 ```
