@@ -9,6 +9,10 @@ Just a custom tutorial to get familiar with powergim
 """
 from pathlib import Path
 
+import mpi4py
+import mpisppy.opt.ph
+import mpisppy.utils.sputils
+
 import pandas as pd
 import pyomo.environ as pyo
 import powergim as pgim
@@ -17,11 +21,20 @@ import powergim as pgim
 # print(Path(__file__).parents[1]) # this works only if i run the fule with run button. Otherwise i do not specify the module so that Path can find the path of the __file__ variable
 
 # Define location of INPUT files
-TEST_DATA_ROOT_PATH = Path(__file__).parents[1] / "test_data"
+# TEST_DATA_ROOT_PATH = Path(__file__).parents[1] / "test_data"
+TEST_DATA_ROOT_PATH = Path(__file__).parents[1] / "stochastic" / "data"
+
+
+
+NUM_SCENARIOS = 4
+TMP_PATH = Path()
+
  
 # ------------------------Read INPUT data (costs)------------------------------
 # 1. Cost and other economical parameters 
-parameter_data = pgim.file_io.read_parameters(TEST_DATA_ROOT_PATH / "parameters.yaml")
+# parameter_data = pgim.file_io.read_parameters(TEST_DATA_ROOT_PATH / "parameters.yaml")
+parameter_data = pgim.file_io.read_parameters(TEST_DATA_ROOT_PATH / "parameters_stoch.yaml")
+
 
 # 2. Grid Layout (available nodes, branches, generators, consumers )
 grid_data      = pgim.file_io.read_grid(
@@ -38,29 +51,112 @@ grid_data.profiles     = pgim.file_io.read_profiles(filename=file_timeseries_sam
 
 grid_data.branch.loc[:, "max_newCap"] = 5000 # Set temporarily to reproduce previous result
 
+# 4. Define 3 scenarios
+scenario_creator_kwargs = {"grid_data": grid_data, "parameter_data": parameter_data}
+scenario_names = ["scen0", "scen1", "scen2"] # TODO: try to define one addtional scenario
+
+# -----------------------Create scenario powerGIM models-----------------------
+# This function edits the inital grid_data and parameters depending on the scenario
+# Then it creates a model instance for the scenario with the modified parameters
+def my_scenario_creator(scenario_name, grid_data, parameter_data):
+    """Create a scenario."""
+    print("Scenario {}".format(scenario_name))
+
+    # Adjust data according to scenario name
+    # FIXME: probabilities should be created only once
+    num_scenarios = NUM_SCENARIOS
+    probabilities = {f"scen{k}": 1 / num_scenarios for k in range(num_scenarios)}
+    # probabilities = {"scen0": 0.3334, "scen1": 0.3333, "scen2": 0.3333,"scen"}
+    
+    if scenario_name == "scen0":
+        pass
+    elif scenario_name == "scen1":
+        # Less wind at SN2
+        grid_data.generator.loc[4, "capacity_2028"] = 1400
+    elif scenario_name == "scen2":
+        # More wind and SN2
+        grid_data.generator.loc[4, "capacity_2028"] = 10000
+        grid_data.generator.loc[3, "capacity_2028"] = 10000
+    elif scenario_name == "scen3":
+        # More wind, more demand
+        grid_data.generator.loc[4, "capacity_2028"] = 8000
+    elif scenario_name == "scen4":
+        grid_data.generator.loc[4, "capacity_2028"] = 9000
+    elif scenario_name == "scen5":
+        grid_data.generator.loc[4, "capacity_2028"] = 10000
+    else:
+        raise ValueError("Invalid scenario name")
+
+    # Create stochastic model:
+    # A) Initialize a pgim object instane (gimModel)
+    gimModel = pgim.SipModel(grid_data, parameter_data)
+    # B) Use scenario_creator method to build a scenario instance model
+    gimScenarioModel = gimModel.scenario_creator(scenario_name, probability=probabilities[scenario_name])
+    return gimScenarioModel
+
+# This formulates the extensive form based on the scenarios that are defined (an mpisppy object)
+# Preferred method based on mpispppy: mpisppy.opt.ef.ExtensiveForm --> needs mpi4py
+gimModel_ef = mpisppy.utils.sputils.create_EF(
+    scenario_names,
+    scenario_creator=my_scenario_creator,
+    scenario_creator_kwargs=scenario_creator_kwargs,
+)
+
+# Solve the EF
+solver = pyo.SolverFactory("glpk")
+solver.solve(
+    gimModel_ef,
+    tee=True,
+    symbolic_solver_labels=True,
+)
+
+# Extract results:
+for scen in mpisppy.utils.sputils.ef_scenarios(gimModel_ef):
+    scen_name = scen[0]
+    this_scen = scen[1]
+    all_var_values = pgim.SipModel.extract_all_variable_values(this_scen)
+    print(f"{scen_name}: OBJ = {pyo.value(this_scen.OBJ)}")
+    print(f"{scen_name}: opCost = {all_var_values[f'{scen_name}.v_operating_cost'].values}")
+
+    # sputils.ef_nonants_csv(main_ef, "sns_results_ef.csv")
+    # sputils.ef_ROOT_nonants_npy_serializer(main_ef, "sns_root_nonants.npy")
+    print(f"EF objective: {pyo.value(gimModel_ef.EF_Obj)}")
+
+# assert all_var_values["scen2.opCost"][1] == pytest.approx(2.0442991e10)
+# assert all_var_values["scen2.opCost"][2] == pytest.approx(5.3318421e10)
+    
+#*******************************************************************************
+#*******************************************************************************
+#*******************************************************************************
+#*******************************************************************************
+#*******************************************************************************
+
+
+
+
 # --------------------------Create powerGIM model------------------------------
-gimModel = pgim.SipModel(grid_data=grid_data, parameter_data=parameter_data)
-# print(gimModel.model_info())
+# gimModel = pgim.SipModel(grid_data=grid_data, parameter_data=parameter_data)
+# # print(gimModel.model_info())
 
-# Necessary pre-processing
-# Compute distance between nodes
-grid_data.branch["dist_computed"] = grid_data.compute_branch_distances()
+# # Necessary pre-processing
+# # Compute distance between nodes
+# grid_data.branch["dist_computed"] = grid_data.compute_branch_distances()
 
-# Define optimization problem solver
-opt = pyo.SolverFactory("glpk")
+# # Define optimization problem solver
+# opt = pyo.SolverFactory("glpk")
 
-# Solve optimization problem
-results = opt.solve(
-        gimModel,
-        tee=False, # Show solver output
-        keepfiles=False, # Keep solver log file
-        symbolic_solver_labels=True, # The solver’s components (e.g., variables, constraints) will be given names that correspond to the Pyomo component names.
-    )
+# # Solve optimization problem
+# results = opt.solve(
+#         gimModel,
+#         tee=False, # Show solver output
+#         keepfiles=False, # Keep solver log file
+#         symbolic_solver_labels=True, # The solver’s components (e.g., variables, constraints) will be given names that correspond to the Pyomo component names.
+#     )
 
-print(f"Objective = {pyo.value(gimModel.OBJ)}")
+# print(f"Objective = {pyo.value(gimModel.OBJ)}")
 
-# Get optimal values of the variables
-all_var_values = gimModel.extract_all_variable_values()
+# # Get optimal values of the variables
+# all_var_values = gimModel.extract_all_variable_values()
 
 # Get grid results - It does not provide any new info
 # gridResult     = gimModel.grid_data_result(all_var_values)
