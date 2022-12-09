@@ -19,8 +19,6 @@ import powergim as pgim
 # Define location of INPUT files
 TEST_DATA_ROOT_PATH = Path(__file__).parents[1] / "test_data"
  
-NUMERIC_THRESHOLD = 1e-3 # FIXME: specify what is this
-
 # ------------------------Read INPUT data (costs)------------------------------
 # 1. Cost and other economical parameters 
 parameter_data = pgim.file_io.read_parameters(TEST_DATA_ROOT_PATH / "parameters.yaml")
@@ -38,7 +36,7 @@ grid_data      = pgim.file_io.read_grid(
 file_timeseries_sample = TEST_DATA_ROOT_PATH / "time_series_sample.csv"
 grid_data.profiles     = pgim.file_io.read_profiles(filename=file_timeseries_sample)
 
-grid_data.branch.loc[:, "max_newCap"] = 5000 # TODO: why setting max_newCap?
+grid_data.branch.loc[:, "max_newCap"] = 5000 # Set temporarily to reproduce previous result
 
 # --------------------------Create powerGIM model------------------------------
 gimModel = pgim.SipModel(grid_data=grid_data, parameter_data=parameter_data)

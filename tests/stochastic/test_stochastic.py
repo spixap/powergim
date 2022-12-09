@@ -42,7 +42,7 @@ def test_stochastic_ef():
         scenario_creator=northsea.my_scenario_creator,
         scenario_creator_kwargs=scenario_creator_kwargs,
     )
-    solver = pyo.SolverFactory("cbc")
+    solver = pyo.SolverFactory("glpk")
     solver.solve(
         main_ef,
         tee=True,
@@ -98,7 +98,8 @@ def test_stochastic_ph_mpi(tmp_path):
 
 
 if __name__ == "__main__":
-    # test_stochastic_ef()
-    test_stochastic_ph(Path(__file__).absolute().parent / "tmp_output")
+    test_stochastic_ef()
+    # test_stochastic_ph(Path(__file__).absolute().parent / "tmp_output")
     # test_stochastic_ph_mpi(Path(__file__).absolute().parent / "tmp_output_mpi")
     pass
+
