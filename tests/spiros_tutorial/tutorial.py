@@ -18,10 +18,8 @@ import pyomo.environ as pyo
 import powergim as pgim
 
 
-# print(Path(__file__).parents[1]) # this works only if i run the fule with run button. Otherwise i do not specify the module so that Path can find the path of the __file__ variable
 
 # Define location of INPUT files
-# TEST_DATA_ROOT_PATH = Path(__file__).parents[1] / "test_data"
 TEST_DATA_ROOT_PATH = Path(__file__).parents[1] / "stochastic" / "data"
 
 
@@ -32,7 +30,6 @@ TMP_PATH = Path()
  
 # ------------------------Read INPUT data (costs)------------------------------
 # 1. Cost and other economical parameters 
-# parameter_data = pgim.file_io.read_parameters(TEST_DATA_ROOT_PATH / "parameters.yaml")
 parameter_data = pgim.file_io.read_parameters(TEST_DATA_ROOT_PATH / "parameters_stoch.yaml")
 
 
@@ -110,11 +107,15 @@ solver.solve(
     symbolic_solver_labels=True,
 )
 
+all_var_all_scen_values = []
+
 # Extract results:
 for scen in mpisppy.utils.sputils.ef_scenarios(gimModel_ef):
+    # Iterable has 2 dimensions: (scenario_name, scnenario_model (associated pyomo model variables))
     scen_name = scen[0]
     this_scen = scen[1]
     all_var_values = pgim.SipModel.extract_all_variable_values(this_scen)
+    all_var_all_scen_values.append(all_var_values)
     print(f"{scen_name}: OBJ = {pyo.value(this_scen.OBJ)}")
     print(f"{scen_name}: opCost = {all_var_values[f'{scen_name}.v_operating_cost'].values}")
 
