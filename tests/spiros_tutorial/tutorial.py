@@ -13,14 +13,14 @@ import logging
 
 
 import mpi4py
+
 import mpisppy.opt.ph
 import mpisppy.utils.sputils
 
 import pandas as pd
 import pyomo.environ as pyo
+
 import powergim as pgim
-
-
 
 
 
@@ -31,7 +31,7 @@ IN_FILES_PATH = Path(__file__).parents[1] / "stochastic" / "data"
 OUT_FILES_PATH = Path(__file__).parent / "outputs"
 
 
-NUM_SCENARIOS = 4
+NUM_SCENARIOS = 3 # 4  for EF, 3 for PH
 TMP_PATH = Path()
 
  
@@ -115,7 +115,7 @@ def my_scenario_denouement(rank, scenario_name, scenario):
     
 
 # Formulate the scenarios-structure to be solved by PH algorithm
-def my_solve_ph(grid_data, parameter_data, my_scenario_creator, my_scenario_denouement, scenario_creator_kwargs, scenario_names):
+def my_solve_ph(my_scenario_creator, my_scenario_denouement, scenario_creator_kwargs, scenario_names):
 
     # # Read input data
     # parameter_data = pgim.file_io.read_parameters(TEST_DATA_ROOT_PATH / "parameters_stoch.yaml")
@@ -190,8 +190,7 @@ def my_solve_ph(grid_data, parameter_data, my_scenario_creator, my_scenario_deno
     return ph, df_res
 
 
-ph, df_res = my_solve_ph(grid_data, parameter_data, my_scenario_creator, my_scenario_denouement, \
-                         scenario_creator_kwargs, scenario_names)
+ph, df_res = my_solve_ph(my_scenario_creator, my_scenario_denouement,scenario_creator_kwargs, scenario_names)
 
 # assert ph is not None
 # assert isinstance(df_res, pd.DataFrame)

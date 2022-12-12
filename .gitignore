@@ -135,3 +135,6 @@ examples/results/
 # PyCharm
 .DS_Store
 tests/stochastic/tmp_*
+
+# CSV files
+.csv

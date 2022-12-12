@@ -98,8 +98,8 @@ def test_stochastic_ph_mpi(tmp_path):
 
 
 if __name__ == "__main__":
-    test_stochastic_ef()
-    # test_stochastic_ph(Path(__file__).absolute().parent / "tmp_output")
+    # test_stochastic_ef()
+    test_stochastic_ph(Path(__file__).absolute().parent / "tmp_output")
     # test_stochastic_ph_mpi(Path(__file__).absolute().parent / "tmp_output_mpi")
     pass
 
