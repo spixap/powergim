@@ -185,12 +185,12 @@ def my_solve_ph(my_scenario_creator, my_scenario_denouement, scenario_creator_kw
             variable_value = variables[scenario_name, variable_name]
             res_ph.append({"scen": scenario_name, "var": variable_name, "value": variable_value})
         df_res = pd.DataFrame(data=res_ph)
-        print(f"{rank}: Saving to file...ph_res_rank0.csv")
+        print(f"Rank{rank}: Saving to file...ph_res_rank0.csv")
         df_res.to_csv(OUT_FILES_PATH / "ph_res_rank0.csv")
     return ph, df_res
 
 
-ph, df_res = my_solve_ph(my_scenario_creator, my_scenario_denouement,scenario_creator_kwargs, scenario_names)
+ph, df_res = my_solve_ph(my_scenario_creator,my_scenario_denouement,scenario_creator_kwargs,scenario_names)
 
 # assert ph is not None
 # assert isinstance(df_res, pd.DataFrame)
