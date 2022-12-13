@@ -137,4 +137,4 @@ examples/results/
 tests/stochastic/tmp_*
 
 # CSV files
-.csv
+*.csv
